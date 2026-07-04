@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script>document.write(`
+<nav>
+  <div class="nav-inner">
+    <span class="logo">PORTFOLIO</span>
+    <ul>
+      <li><a href="index.html" id="nav-home">Home</a></li>
+      <li><a href="index.html#about" id="nav-about">About</a></li>
+      <li><a href="index.html#projects" id="nav-projects">Projects</a></li>
+      <li><a href="index.html#skills" id="nav-skills">Skills</a></li>
+      <li><a href="index.html#contact" id="nav-contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+`);</script>
+
+  <section id="hero">
+    <div class="hero-content">
+      <div class="chapter-badge">— CHAPTER 01: THE PROTAGONIST —</div>
+      <h1>Your Name</h1>
+      <div class="red-divider"></div>
+      <div class="speech-bubble">
+        <p class="tagline">Title / Tagline</p>
+      </div>
+      <a href="#projects" class="btn-cta">VIEW MY WORK ↓</a>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="container">
+      <h2>About Me</h2>
+      <div class="about-content">
+        <p>Write your bio here. Who you are, what you do, what you're passionate about.</p>
+        <p>This will be your real story — not placeholder text from a template.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="container">
+      <h2>Projects</h2>
+      <div id="project-grid" class="project-grid">
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="container">
+      <h2>Skills</h2>
+      <div class="skill-list">
+        <div class="skill">
+          <span>HTML & CSS</span>
+          <div class="bar"><div class="fill" style="width:80%"></div></div>
+        </div>
+        <div class="skill">
+          <span>JavaScript</span>
+          <div class="bar"><div class="fill" style="width:60%"></div></div>
+        </div>
+        <div class="skill">
+          <span>Python</span>
+          <div class="bar"><div class="fill" style="width:50%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="container">
+      <h2>Contact</h2>
+      <form>
+        <input type="text" placeholder="Your Name">
+        <input type="email" placeholder="Your Email">
+        <textarea placeholder="Your Message"></textarea>
+        <button type="submit" class="btn">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Your Name</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

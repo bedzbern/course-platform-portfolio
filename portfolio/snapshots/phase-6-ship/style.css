@@ -1,0 +1,581 @@
+/* ===== RESET ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif;
+  background: #f5f0e8;
+  color: #0d0d0d;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, .logo {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 3px;
+}
+
+/* ===== MANGA COLOR PALETTE ===== */
+:root {
+  --ink: #0d0d0d;
+  --paper: #f5f0e8;
+  --red: #cc0000;
+  --gray: #555;
+  --light-gray: #ddd;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: var(--ink);
+  border-bottom: 4px solid var(--red);
+  z-index: 100;
+}
+
+.nav-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+}
+
+.logo {
+  color: var(--paper);
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 16px;
+}
+
+nav a {
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+nav a:hover {
+  color: var(--red);
+}
+
+.nav-active {
+  color: var(--red) !important;
+  border-bottom: 2px solid var(--red);
+}
+
+/* ===== HERO ===== */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url('https://picsum.photos/seed/manga-bg/1600/900');
+  background-size: cover;
+  background-position: center;
+  color: var(--paper);
+  border-bottom: 4px solid var(--ink);
+  padding: 20px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Chapter badge */
+.chapter-badge {
+  display: inline-block;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 6px 16px;
+  margin-bottom: 20px;
+  border: 3px solid var(--ink);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* Hero name */
+.hero-content h1 {
+  font-size: clamp(3rem, 12vw, 9rem);
+  line-height: 1;
+  margin-bottom: 0;
+  color: var(--paper);
+  text-shadow: 4px 4px 0 var(--red), 7px 7px 0 #0d0d0d;
+}
+
+/* Red divider */
+.red-divider {
+  width: 80px;
+  height: 6px;
+  background: var(--red);
+  margin: 16px auto;
+}
+
+/* Tagline */
+.tagline {
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+/* Speech bubble inside hero */
+#hero .speech-bubble {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+#hero .speech-bubble > .tagline {
+  background: #fff;
+  color: var(--ink);
+  border: 4px solid var(--ink);
+  padding: 10px 24px;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+/* Speech bubble tail (ink border) */
+#hero .speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 32px;
+  border: 10px solid transparent;
+  border-top-color: var(--ink);
+}
+
+/* Speech bubble tail (white fill) */
+#hero .speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 35px;
+  border: 8px solid transparent;
+  border-top-color: #fff;
+}
+
+/* ===== PAGE HERO (inner pages) ===== */
+.page-hero {
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url('https://picsum.photos/seed/manga-bg/1600/900');
+  background-size: cover;
+  background-position: center;
+  color: var(--paper);
+  border-bottom: 4px solid var(--ink);
+  padding: 80px 20px 40px;
+}
+
+.page-hero .hero-content h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #ccc;
+  margin-top: 4px;
+}
+
+/* ===== CTA Button */
+.btn-cta {
+  display: inline-block;
+  background: var(--red);
+  color: var(--paper);
+  padding: 14px 40px;
+  text-decoration: none;
+  border: 4px solid var(--paper);
+  font-family: 'Bangers', cursive;
+  font-size: 1.6rem;
+  letter-spacing: 3px;
+  box-shadow: 6px 6px 0 var(--ink);
+  transition: 0.15s;
+}
+
+.btn-cta:hover {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-block;
+  background: var(--red);
+  color: var(--paper);
+  padding: 12px 28px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 3px solid var(--paper);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: var(--paper);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* ===== SECTIONS ===== */
+section {
+  padding: 80px 20px;
+}
+
+section:nth-child(even) {
+  background: var(--paper);
+}
+
+section:nth-child(odd) {
+  background: #e8e0d0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 40px;
+  text-align: center;
+  position: relative;
+}
+
+h2::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--red);
+  margin: 10px auto 0;
+}
+
+/* ===== ABOUT ===== */
+.about-content p {
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* ===== PROJECTS ===== */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.project-card {
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  text-align: center;
+  transition: 0.2s;
+  overflow: hidden;
+}
+
+.project-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.project-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 3px solid var(--ink);
+}
+
+.project-card h3 {
+  font-size: 1.3rem;
+  margin: 16px 0 8px;
+  padding: 0 16px;
+}
+
+.project-card p {
+  font-size: 0.9rem;
+  color: var(--gray);
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+.card-link {
+  display: inline-block;
+  margin: 0 16px 20px;
+  padding: 6px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  transition: 0.2s;
+}
+
+.card-link:hover {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+/* ===== PROJECT DETAIL PAGE ===== */
+.project-detail {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-block;
+  color: var(--red);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+  transition: 0.2s;
+}
+
+.back-link:hover {
+  color: var(--ink);
+}
+
+.detail-image {
+  width: 100%;
+  border: 4px solid var(--ink);
+  margin-bottom: 32px;
+}
+
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 32px;
+  align-items: start;
+}
+
+.detail-description h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+
+.detail-description p {
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+
+.tech-list {
+  margin-bottom: 24px;
+}
+
+.tech-list h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.tech-list span {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 0 6px 8px 0;
+  border: 2px solid var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.detail-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-links .btn {
+  text-align: center;
+}
+
+/* ===== SKILLS ===== */
+.skill-list {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skill {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skill span {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.bar {
+  height: 14px;
+  background: var(--light-gray);
+  border: 2px solid var(--ink);
+}
+
+.fill {
+  height: 100%;
+  background: var(--red);
+  transition: width 0.6s ease;
+}
+
+/* ===== CONTACT ===== */
+form {
+  max-width: 450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+input, textarea {
+  padding: 12px 14px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+form .btn {
+  align-self: flex-start;
+  border-color: var(--ink);
+}
+
+form .btn:hover {
+  border-color: var(--red);
+}
+
+/* ===== CONTACT PAGE LAYOUT ===== */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.contact-info p {
+  font-size: 1.05rem;
+  margin-bottom: 24px;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.social-link {
+  display: inline-block;
+  padding: 8px 20px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: 0.2s;
+}
+
+.social-link:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--ink);
+  color: var(--paper);
+  border-top: 4px solid var(--red);
+}
+
+footer p {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .hero-content h1 {
+    font-size: 2.8rem;
+  }
+
+  .chapter-badge {
+    font-size: 0.55rem;
+    padding: 4px 10px;
+    letter-spacing: 2px;
+  }
+
+  #hero .speech-bubble > .tagline {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .btn-cta {
+    font-size: 1.2rem;
+    padding: 10px 24px;
+  }
+
+  nav ul {
+    gap: 8px;
+  }
+
+  nav a {
+    font-size: 0.75rem;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-body {
+    grid-template-columns: 1fr;
+  }
+}
