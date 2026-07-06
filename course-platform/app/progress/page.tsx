@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getAllLessons, getLessonsByPhase } from '@/lib/lessons';
 import { getPhasePoints, TOTAL_COURSE_POINTS } from '@/lib/exercises';
 
@@ -127,6 +127,22 @@ export default function ProgressPage() {
           </div>
         );
       })}
+
+      {user && db && (
+        <div className="mt-12 border-t-2 border-[#0d0d0d] pt-8">
+          <button
+            onClick={async () => {
+              if (!window.confirm('Reset all progress and exercise scores? This cannot be undone.')) return;
+              await setDoc(doc(db!, 'progress', user.uid), { completed: [], exerciseScores: {}, totalPoints: 0 });
+              setCompleted(new Set());
+              setScores({});
+            }}
+            className="border-2 border-red-500 text-red-600 px-5 py-2.5 text-sm font-bold hover:bg-red-50 transition-colors cursor-pointer"
+          >
+            Reset My Progress
+          </button>
+        </div>
+      )}
     </div>
   );
 }
