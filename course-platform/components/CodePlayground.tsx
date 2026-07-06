@@ -62,8 +62,25 @@ export function CodePlayground({
   const [isHorizontal, setIsHorizontal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<any>(null);
   const dragging = useRef(false);
   const dragAxis = useRef<'x' | 'y'>('y');
+
+  const handleEditorDidMount = (editor: any, monaco: any) => {
+    editorRef.current = editor;
+    editor.addAction({
+      id: 'format-document',
+      label: 'Format Document',
+      keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF],
+      run: () => {
+        editor.getAction('editor.action.formatDocument')?.run();
+      },
+    });
+  };
+
+  const formatCode = () => {
+    editorRef.current?.getAction('editor.action.formatDocument')?.run();
+  };
 
   useEffect(() => {
     if (standalone) setOpen(true);
@@ -220,6 +237,7 @@ ${html}
           theme="vs-dark"
           value={code.value}
           onChange={(val) => code.set(val || '')}
+          onMount={handleEditorDidMount}
           options={{
             automaticLayout: true,
             minimap: { enabled: false },
@@ -241,6 +259,12 @@ ${html}
           className="border-2 border-[#0d0d0d] px-4 py-1.5 text-sm font-bold hover:bg-[#0d0d0d] hover:text-[#f5f0e8] transition-colors cursor-pointer"
         >
           Preview ↗
+        </button>
+        <button
+          onClick={formatCode}
+          className="border-2 border-[#0d0d0d] px-4 py-1.5 text-sm font-bold hover:bg-[#0d0d0d] hover:text-[#f5f0e8] transition-colors cursor-pointer"
+        >
+          Format ⇧⌥F
         </button>
         <button
           onClick={reset}
