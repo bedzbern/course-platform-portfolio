@@ -23,7 +23,7 @@ export default async function ExercisePage({ params }: Props) {
   const jsFile = data.files.find(f => f.name === 'script.js');
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-6 flex items-center gap-2 text-sm text-zinc-500">
         <Link href="/exercises" className="hover:text-[#cc0000] transition-colors">Exercises</Link>
         <span>/</span>

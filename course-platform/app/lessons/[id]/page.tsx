@@ -32,7 +32,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const { prev, next } = getAdjacentLessons(id);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-6 flex items-center gap-2 text-sm text-zinc-500">
         <Link href="/syllabus" className="hover:text-[#cc0000] transition-colors">Syllabus</Link>
         <span>/</span>

@@ -5,7 +5,7 @@ export default function SyllabusPage() {
   const phases = getLessonsByPhase();
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-4xl font-black uppercase mb-2">Course Syllabus</h1>
       <p className="text-zinc-600 mb-4">37 lessons across 6 phases. Start at Phase 1 and go in order.</p>
       <div className="mb-10">
