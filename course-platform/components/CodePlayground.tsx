@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
+let completionRegistered = false;
+
 type Tab = 'html' | 'css' | 'js';
 
 const DEFAULT_HTML = `<!DOCTYPE html>
@@ -66,6 +68,102 @@ export function CodePlayground({
   const editorRef = useRef<any>(null);
   const dragging = useRef(false);
   const dragAxis = useRef<'x' | 'y'>('y');
+
+  const handleBeforeMount = (monaco: any) => {
+    if (completionRegistered) return;
+    completionRegistered = true;
+
+    const HTML_TAGS = [
+      'html', 'head', 'body', 'title', 'meta', 'link', 'style', 'script',
+      'header', 'nav', 'main', 'section', 'article', 'aside', 'footer',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'span', 'div', 'a', 'img', 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'form', 'input', 'textarea', 'button', 'select', 'option', 'label',
+      'figure', 'figcaption', 'blockquote', 'pre', 'code', 'br', 'hr',
+      'strong', 'em', 'b', 'i', 'u', 'small', 'mark', 'sub', 'sup',
+      'iframe', 'video', 'audio', 'canvas', 'svg',
+    ];
+
+    try {
+      monaco.languages.registerCompletionItemProvider('html', {
+        triggerCharacters: ['<', '!'],
+        provideCompletionItems: (model: any, position: any) => {
+          const textUntil = model.getValueInRange({
+            startLineNumber: position.lineNumber,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column,
+          });
+          const word = model.getWordUntilPosition(position);
+          const wordText = word.word;
+          const col = position.column;
+
+          const mkRange = (start: number, end: number) => ({
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: start,
+            endColumn: end,
+          });
+
+          // Emmet-style: tag.class → <tag class="class">, .class → <div class="class">
+          // tag#id → <tag id="id">, #id → <div id="id">
+          const emmetMatch = textUntil.match(/((?:\w[\w-]*)?)([.#])([\w][\w-]*)$/);
+          if (emmetMatch) {
+            const tag = emmetMatch[1] || 'div';
+            const symbol = emmetMatch[2];
+            const suffix = emmetMatch[3];
+            const attr = symbol === '.' ? 'class' : 'id';
+            const matchLen = emmetMatch[0].length;
+            return {
+              suggestions: [{
+                label: `${tag}${symbol}${suffix}`,
+                detail: `<${tag} ${attr}="${suffix}">`,
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: `<${tag} ${attr}="${suffix}">$0</${tag}>`,
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                range: mkRange(col - matchLen, col),
+              }],
+            };
+          }
+
+          // <tag → complete tag name with closing tag
+          if (textUntil.includes('<') && !textUntil.includes('>')) {
+            const tagStart = textUntil.lastIndexOf('<');
+            const partial = textUntil.slice(tagStart + 1);
+            if (/^\w*$/.test(partial)) {
+              const suggestions = HTML_TAGS
+                .filter(t => t.startsWith(partial))
+                .map(t => ({
+                  label: t,
+                  detail: `<${t}>...</${t}>`,
+                  kind: monaco.languages.CompletionItemKind.Property,
+                  insertText: `${t}>$0</${t}>`,
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                  range: mkRange(tagStart + 2, col),
+                }));
+              return { suggestions };
+            }
+          }
+
+          // ! → HTML5 boilerplate
+          if (wordText === '!' || textUntil.trim() === '!') {
+            return {
+              suggestions: [{
+                label: '! HTML5 boilerplate',
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n  $0\n</body>\n</html>',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                range: mkRange(word.startColumn, word.endColumn),
+              }],
+            };
+          }
+
+          return { suggestions: [] };
+        },
+      });
+    } catch {}
+  };
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
@@ -271,6 +369,7 @@ ${html}
           theme="vs-dark"
           value={code.value}
           onChange={(val) => code.set(val || '')}
+          beforeMount={handleBeforeMount}
           onMount={handleEditorDidMount}
           options={{
             automaticLayout: true,
@@ -278,6 +377,14 @@ ${html}
             fontSize: 13,
             scrollBeyondLastLine: false,
             padding: { top: 8, bottom: 8 },
+            autoClosingBrackets: 'always',
+            autoClosingQuotes: 'always',
+            tabCompletion: 'on',
+            snippetSuggestions: 'inline',
+            wordBasedSuggestions: 'currentDocument',
+            suggestOnTriggerCharacters: true,
+            acceptSuggestionOnEnter: 'smart',
+            acceptSuggestionOnCommitCharacter: true,
           }}
         />
       </div>
