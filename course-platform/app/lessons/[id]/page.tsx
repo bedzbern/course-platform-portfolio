@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
 import { getLessonById, getAdjacentLessons, getAllLessons } from '@/lib/lessons';
+import { getLessonStartCode, getLessonEndCode } from '@/lib/lesson-snapshots';
 import { LessonContent } from './LessonContent';
 import { MarkComplete } from '@/components/MarkComplete';
 import { ProgressMini } from '@/components/ProgressMini';
@@ -32,6 +33,18 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
   const { prev, next } = getAdjacentLessons(id);
 
+  // Pre-load the CodePlayground with per-lesson accurate code
+  const startCode = getLessonStartCode(id);
+  const endCode = getLessonEndCode(id);
+
+  const initialHtml = startCode?.html || '';
+  const initialCss = startCode?.css || '';
+  const initialJs = startCode?.js || '';
+
+  const answerHtml = endCode?.html || '';
+  const answerCss = endCode?.css || '';
+  const answerJs = endCode?.js || '';
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-6 flex items-center gap-2 text-sm text-zinc-500">
@@ -46,7 +59,14 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
       <LessonContent content={content} />
 
-      <CodePlayground />
+      <CodePlayground
+        initialHtml={initialHtml || undefined}
+        initialCss={initialCss || undefined}
+        initialJs={initialJs || undefined}
+        answerHtml={answerHtml || undefined}
+        answerCss={answerCss || undefined}
+        answerJs={answerJs || undefined}
+      />
 
       <div className="mt-8 flex justify-between items-center">
         {prev ? (

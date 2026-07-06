@@ -11,7 +11,7 @@ export default function SyllabusPage() {
       <p className="text-zinc-600 mb-4">37 lessons across 6 phases. Start at Phase 1 and go in order.</p>
       <div className="mb-10">
         <Link href="/exercises" className="text-[#cc0000] font-bold text-sm hover:underline">
-          View Phase Exercises →
+          View Phase Reviews →
         </Link>
       </div>
 

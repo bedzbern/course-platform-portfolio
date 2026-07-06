@@ -19,7 +19,7 @@ export function ProgressMini() {
     }
     const fetch = async () => {
       try {
-        const ref = doc(db, 'progress', user.uid);
+        const ref = doc(db!, 'progress', user.uid);
         const snap = await getDoc(ref);
         const all = getAllLessons().length;
         const done = snap.exists() ? (snap.data().completed || []).length : 0;

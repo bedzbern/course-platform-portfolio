@@ -14,7 +14,6 @@ export function Navbar() {
         </Link>
         <ul className="flex items-center gap-6 text-sm">
           <li><Link href="/syllabus" className="text-[#f5f0e8] hover:text-[#cc0000] transition-colors">Syllabus</Link></li>
-          <li><Link href="/exercises" className="text-[#f5f0e8] hover:text-[#cc0000] transition-colors">Exercises</Link></li>
           <li><Link href="/about" className="text-[#f5f0e8] hover:text-[#cc0000] transition-colors">About</Link></li>
           <li><Link href="/faq" className="text-[#f5f0e8] hover:text-[#cc0000] transition-colors">FAQ</Link></li>
           {!loading && (

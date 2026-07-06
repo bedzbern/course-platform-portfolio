@@ -31,7 +31,7 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
     }
     const fetch = async () => {
       try {
-        const ref = doc(db, 'progress', user.uid);
+        const ref = doc(db!, 'progress', user.uid);
         const snap = await getDoc(ref);
         if (snap.exists()) {
           setCompleted(new Set(snap.data().completed || []));
@@ -102,7 +102,7 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
               href={`/exercises/phase-${phase.phase}`}
               className="inline-block mt-3 border-2 border-[#0d0d0d] px-4 py-2 text-sm font-bold hover:bg-[#0d0d0d] hover:text-[#f5f0e8] transition-colors"
             >
-              Phase {phase.phase} Exercise →
+               Phase {phase.phase} Review →
             </Link>
           </div>
         );

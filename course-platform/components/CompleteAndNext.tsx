@@ -17,7 +17,7 @@ export function CompleteAndNext({ currentId, nextId, nextLabel }: Props) {
 
   const handleClick = async () => {
     if (user && db) {
-      const ref = doc(db, 'progress', user.uid);
+      const ref = doc(db!, 'progress', user.uid);
       const snap = await getDoc(ref);
       const list: string[] = snap.exists() ? (snap.data().completed || []) : [];
       if (!list.includes(currentId)) {
