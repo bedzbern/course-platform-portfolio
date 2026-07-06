@@ -60,9 +60,9 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <LessonContent content={content} />
 
       <CodePlayground
-        initialHtml={initialHtml || undefined}
-        initialCss={initialCss || undefined}
-        initialJs={initialJs || undefined}
+        initialHtml={initialHtml}
+        initialCss={initialCss}
+        initialJs={initialJs}
         answerHtml={answerHtml || undefined}
         answerCss={answerCss || undefined}
         answerJs={answerJs || undefined}

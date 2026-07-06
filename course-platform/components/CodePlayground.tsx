@@ -60,6 +60,7 @@ export function CodePlayground({
   const [savedJs, setSavedJs] = useState('');
   const [splitPos, setSplitPos] = useState(60);
   const [isHorizontal, setIsHorizontal] = useState(false);
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<any>(null);
@@ -94,6 +95,16 @@ export function CodePlayground({
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.source === iframeRef.current?.contentWindow && e.data?.type === 'console') {
+        setConsoleLogs(prev => [...prev, e.data.message]);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
   const buildDocument = () => `
 <!DOCTYPE html>
 <html lang="en">
@@ -101,6 +112,28 @@ export function CodePlayground({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>${css}</style>
+  <script>
+    (function() {
+      var origLog = console.log;
+      var origWarn = console.warn;
+      var origError = console.error;
+      console.log = function() {
+        parent.postMessage({ type: 'console', message: Array.from(arguments).map(String).join(' ') }, '*');
+        return origLog.apply(console, arguments);
+      };
+      console.warn = function() {
+        parent.postMessage({ type: 'console', message: '\\u26A0 ' + Array.from(arguments).map(String).join(' ') }, '*');
+        return origWarn.apply(console, arguments);
+      };
+      console.error = function() {
+        parent.postMessage({ type: 'console', message: '\\u2715 ' + Array.from(arguments).map(String).join(' ') }, '*');
+        return origError.apply(console, arguments);
+      };
+      window.onerror = function(msg) {
+        parent.postMessage({ type: 'console', message: '\\u2715 ' + msg }, '*');
+      };
+    })();
+  <\/script>
 </head>
 <body>
 ${html}
@@ -109,6 +142,7 @@ ${html}
 </html>`;
 
   const runCode = () => {
+    setConsoleLogs([]);
     const doc = buildDocument();
     if (iframeRef.current) {
       iframeRef.current.srcdoc = doc;
@@ -303,9 +337,17 @@ ${html}
       <iframe
         ref={iframeRef}
         title="Preview"
-        className="w-full flex-1 bg-white"
+        className="w-full flex-1 min-h-0 bg-white"
         sandbox="allow-scripts allow-same-origin"
       />
+      {consoleLogs.length > 0 && (
+        <div className="border-t-2 border-[#0d0d0d] bg-[#1e1e1e] text-[#d4d4d4] font-mono text-xs shrink-0 max-h-[120px] overflow-y-auto">
+          <div className="px-3 py-1 text-[#888] text-[10px] uppercase tracking-wider font-bold">Console</div>
+          {consoleLogs.map((msg, i) => (
+            <div key={i} className="px-3 py-0.5 border-t border-[#333]">{msg}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
