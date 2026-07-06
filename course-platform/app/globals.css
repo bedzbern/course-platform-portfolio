@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "highlight.js/styles/vs2015.css";
 
 :root {
   --background: #f5f0e8;
@@ -25,7 +26,7 @@ body {
 .markdown h2 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; border-bottom: 2px solid #cc0000; padding-bottom: 0.25rem; }
 .markdown h3 { font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.25rem; }
 .markdown p { margin: 0.5rem 0; line-height: 1.7; }
-.markdown pre { background: #1e1e2e; color: #cdd6f4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.75rem 0; font-size: 0.9rem; }
+.markdown pre { padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.75rem 0; font-size: 0.9rem; }
 .markdown code { font-family: var(--font-mono), monospace; }
 .markdown :not(pre) > code { background: #e8e0d0; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.9rem; }
 .markdown table { width: 100%; border-collapse: collapse; margin: 1rem 0; }

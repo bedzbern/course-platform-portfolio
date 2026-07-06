@@ -13,7 +13,9 @@ A Next.js 16 app that turns the 39 portfolio lesson `.md` files into an interact
 - **Styling:** Tailwind CSS v4 (manga color palette matching the portfolio)
 - **Auth & Database:** Firebase Auth (email/password) + Firestore
 - **Content:** 39 lesson `.md` files in `content/` (copied from `portfolio/course/`)
-- **Rendering:** `react-markdown` + `remark-gfm` with custom code block wrapping
+- **Rendering:** `react-markdown` + `remark-gfm` + `rehype-highlight` with custom code block wrapping
+- **Code Editors:** Monaco Editor (`@monaco-editor/react`, vs-dark theme) — replaces all `<textarea>` editors in playground and snapshot viewer
+- **Syntax Highlighting:** `highlight.js/styles/vs2015.css` for lesson markdown code blocks
 
 ### Env Vars (in `.env.local`)
 ```
@@ -74,7 +76,7 @@ course-platform/
 | **Mark Complete** | `MarkComplete.tsx` | Toggle button in breadcrumb, syncs to Firestore per user |
 | **Copy Code** | `CopyCode.tsx` → `PreWrapper` | Hover code block → "Copy" button appears |
 | **Try It Checklist** | `TryItChecklist.tsx` | Add/check-off tasks, persists in localStorage |
-| **Code Playground** | `CodePlayground.tsx` | HTML/CSS/JS editor + Run + iframe preview + Preview in New Tab |
+| **Code Playground** | `CodePlayground.tsx` | HTML/CSS/JS editor (Monaco Editor, vs-dark) + Run + iframe preview + Preview in New Tab |
 | **Prev / Next Nav** | Built into `page.tsx` | Sequential lesson links at bottom |
 
 ### Auth & Progress
@@ -141,6 +143,42 @@ Loaded at build time via `lib/snapshots.ts` using `fs`.
 
 ---
 
+## Session Log — Jul 6, 2026
+
+### Changes Made
+
+**1. Figma boilerplate deleted from repo root**
+- The original scaffolding files that Figma exported (`C:\Users\ACT-STUDENT\Downloads\FIGMA\`) were removed — only the living project in `Manga Style Portfolio Website (1)/` remains
+
+**2. Monokai dark theme applied across all code blocks (Monaco Editor + rehype-highlight)**
+
+Two complementary changes to give every code display a uniform dark editor look:
+
+- **Monaco Editor integration** (`components/CodePlayground.tsx`, `components/SnapshotViewer.tsx`):
+  - Replaced raw `<textarea>` editors with `@monaco-editor/react` (vs-dark theme)
+  - `CodePlayground.tsx` — live editable code tabs now use Monaco (with minimap off, 13px font)
+  - `SnapshotViewer.tsx` — read-only code display now uses Monaco (with `readOnly: true`, 12px font, language auto-detected from file extension)
+  - Both imported via `dynamic(() => import(...), { ssr: false })` to avoid SSR issues
+
+- **Syntax highlighting in lesson markdown** (`app/globals.css`, `app/lessons/[id]/LessonContent.tsx`):
+  - Added `rehype-highlight` plugin to `ReactMarkdown` in `LessonContent.tsx`
+  - Imported `highlight.js/styles/vs2015.css` in `globals.css`
+  - Removed the hardcoded dark background from `.markdown pre` (now handled by highlight.js)
+
+**3. New dependencies added to `package.json`:**
+  - `@monaco-editor/react` — Monaco Editor wrapper for React
+  - `rehype-highlight` — syntax highlighting plugin for react-markdown
+
+### Remaining / Known Issues
+
+- `/exercises/[phase]/page.tsx` — still a stub, needs full implementation
+- `/playground/page.tsx` — still a stub, needs full implementation
+- `components/SnapshotViewer.tsx` — now renders code, but exercise page layout is not wired up
+- `lib/snapshots.ts` — still a stub, needs `fs`-based snapshot loading
+- Monaco editor textarea fallback not tested in older browsers
+
+---
+
 ## Critical Rules for the Next AI
 
 1. **NEVER use `fs` in client components.** `lib/snapshots.ts` is server-only.
@@ -149,6 +187,8 @@ Loaded at build time via `lib/snapshots.ts` using `fs`.
 4. **`params` must be awaited** — Next.js 16 requires `const { id } = await params`.
 5. **MarkComplete** requires `lessonId` prop — it fetches progress from Firestore.
 6. **Code Playground** uses `Blob` URLs for "Preview in New Tab" — `URL.revokeObjectURL` is called after 10s delay.
+7. **Monaco Editor (`@monaco-editor/react`)** must ALWAYS be imported via `dynamic(() => import(...), { ssr: false })` — it references `window` and will crash on the server. Never import it statically.
+8. **SnapshotViewer** uses `detectLang(name)` to map file extensions (`html`, `css`, `js`) to Monaco language IDs. If a snapshot adds new file types, update this mapper.
 
 ---
 

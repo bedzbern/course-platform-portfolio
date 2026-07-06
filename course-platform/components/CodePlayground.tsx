@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 type Tab = 'html' | 'css' | 'js';
 
@@ -209,12 +212,21 @@ ${html}
           </button>
         ))}
       </div>
-      <textarea
-        value={code.value}
-        onChange={e => code.set(e.target.value)}
-        className="w-full flex-1 p-3 text-sm font-mono bg-[#1e1e2e] text-[#cdd6f4] resize-none outline-none min-h-0"
-        spellCheck={false}
-      />
+      <div className="flex-1 min-h-0">
+        <MonacoEditor
+          key={tab}
+          language={tab === 'js' ? 'javascript' : tab}
+          theme="vs-dark"
+          value={code.value}
+          onChange={(val) => code.set(val || '')}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 13,
+            scrollBeyondLastLine: false,
+            padding: { top: 8, bottom: 8 },
+          }}
+        />
+      </div>
       <div className="flex gap-2 px-4 py-2 border-t-2 border-[#0d0d0d] shrink-0 flex-wrap">
         <button
           onClick={runCode}

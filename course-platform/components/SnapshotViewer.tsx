@@ -1,7 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import type { SnapshotFile } from '@/lib/snapshots';
+
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
+
+function detectLang(name: string): string {
+  if (name.endsWith('.html')) return 'html';
+  if (name.endsWith('.css')) return 'css';
+  if (name.endsWith('.js')) return 'javascript';
+  return 'plaintext';
+}
 
 export function SnapshotViewer({ files }: { files: SnapshotFile[] }) {
   const [tab, setTab] = useState(0);
@@ -28,9 +38,20 @@ export function SnapshotViewer({ files }: { files: SnapshotFile[] }) {
           </button>
         ))}
       </div>
-      <pre className="p-3 text-xs font-mono bg-[#1e1e2e] text-[#cdd6f4] overflow-x-auto max-h-80 overflow-y-auto">
-        <code>{current?.content}</code>
-      </pre>
+      <div className="h-80">
+        <MonacoEditor
+          language={detectLang(current?.name || '')}
+          theme="vs-dark"
+          value={current?.content || ''}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            fontSize: 12,
+            scrollBeyondLastLine: false,
+            padding: { top: 12, bottom: 12 },
+          }}
+        />
+      </div>
     </div>
   );
 }

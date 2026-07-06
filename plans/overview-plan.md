@@ -118,3 +118,33 @@ You walk away with:
 - Standalone playground editor textarea doesn't show the snapshot initial code until user interacts (might need a `runCode()` call on mount)
 - Scroll-active nav highlighting scroll offset of 120px may need tuning
 - Phase lessons content (`.md` files in `course-platform/content/`) not yet created — lessons exist as routes but are empty shells
+
+---
+
+## Session Log — Jul 6, 2026
+
+### Changes Made
+
+**1. Figma boilerplate deleted from repo root**
+- Removed the original Figma-exported scaffolding files from the repo root level
+- Only the living project in `Manga Style Portfolio Website (1)/` remains
+
+**2. Monokai dark theme applied across course-platform code blocks**
+
+Two complementary changes:
+- **Monaco Editor** (`@monaco-editor/react`, vs-dark theme) replaced raw `<textarea>` editors in `CodePlayground.tsx` and `SnapshotViewer.tsx`
+- **rehype-highlight** + `highlight.js/styles/vs2015.css` added to `LessonContent.tsx` for syntax-highlighted code blocks in lesson markdown
+- New deps: `@monaco-editor/react`, `rehype-highlight`
+
+### Files Modified
+- `course-platform/app/globals.css` — imported vs2015.css, removed hardcoded dark pre bg
+- `course-platform/app/lessons/[id]/LessonContent.tsx` — added rehype-highlight plugin
+- `course-platform/components/CodePlayground.tsx` — replaced textarea with Monaco
+- `course-platform/components/SnapshotViewer.tsx` — replaced pre/code with Monaco (read-only)
+- `course-platform/package.json` / `package-lock.json` — new deps
+
+### Remaining / Known Issues
+- `/exercises/[phase]/page.tsx` — still a stub
+- `/playground/page.tsx` — still a stub
+- `components/SnapshotViewer.tsx` — layout not wired into exercise pages yet
+- `lib/snapshots.ts` — still a stub
