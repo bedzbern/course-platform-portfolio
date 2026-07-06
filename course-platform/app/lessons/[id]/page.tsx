@@ -5,7 +5,8 @@ import path from 'path';
 import { getLessonById, getAdjacentLessons, getAllLessons } from '@/lib/lessons';
 import { LessonContent } from './LessonContent';
 import { MarkComplete } from '@/components/MarkComplete';
-import { TryItChecklist } from '@/components/TryItChecklist';
+import { ProgressMini } from '@/components/ProgressMini';
+import { CompleteAndNext } from '@/components/CompleteAndNext';
 import { CodePlayground } from '@/components/CodePlayground';
 
 export async function generateStaticParams() {
@@ -37,7 +38,8 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <Link href="/syllabus" className="hover:text-[#cc0000] transition-colors">Syllabus</Link>
         <span>/</span>
         <span className="font-mono">{lesson.number}</span>
-        <span className="ml-auto">
+        <span className="ml-auto flex items-center gap-4">
+          <ProgressMini />
           <MarkComplete lessonId={id} />
         </span>
       </div>
@@ -45,8 +47,6 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <LessonContent content={content} />
 
       <CodePlayground />
-
-      <TryItChecklist lessonId={id} />
 
       <div className="mt-8 flex justify-between items-center">
         {prev ? (
@@ -57,14 +57,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
             ← {prev.number} {prev.title}
           </Link>
         ) : <div />}
-        {next && (
-          <Link
-            href={`/lessons/${next.id}`}
-            className="border-2 border-[#0d0d0d] px-5 py-2.5 font-bold text-sm hover:bg-[#0d0d0d] hover:text-[#f5f0e8] transition-colors"
-          >
-            {next.number} {next.title} →
-          </Link>
-        )}
+        <CompleteAndNext
+          currentId={id}
+          nextId={next?.id}
+          nextLabel={next ? `${next.number} ${next.title}` : ''}
+        />
       </div>
     </div>
   );

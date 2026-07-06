@@ -56,7 +56,7 @@ export default function ProgressPage() {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-4xl font-black uppercase mb-2">Your Progress</h1>
       <p className="text-zinc-500 mb-6">{user?.email}</p>
 

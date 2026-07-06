@@ -143,6 +143,27 @@ Two complementary changes:
 - `course-platform/components/SnapshotViewer.tsx` — replaced pre/code with Monaco (read-only)
 - `course-platform/package.json` / `package-lock.json` — new deps
 
+**3. Monaco editor height fix** (`course-platform/components/CodePlayground.tsx`, `components/SnapshotViewer.tsx`)
+- Monaco editor only rendered at 86px because its flex container wasn't a flex parent
+- Fix: added `flex flex-col` to the outer `h-[500px] sm:h-[60vh]` container so `flex-1` on `inner` actually works
+- Added `h-full` + `height="100%"` + `automaticLayout: true` to Monaco wrapper and props
+- Same fix applied to `SnapshotViewer.tsx` (added `automaticLayout: true`)
+
+**4. Full-width layout** (lesson, syllabus, exercises, progress pages)
+- Changed all `max-w-4xl`/`max-w-5xl mx-auto px-6` to `w-full px-4 sm:px-6 lg:px-8` on:
+  - `app/lessons/[id]/page.tsx`
+  - `app/syllabus/page.tsx`
+  - `app/exercises/[phase]/page.tsx`
+  - `app/progress/page.tsx`
+
+**5. Progress tracking overhaul**
+- **Deleted** `components/TryItChecklist.tsx` (useless, user requested removal)
+- **Created** `components/CompleteAndNext.tsx` — replaces the plain Next link; marks lesson complete in Firestore then navigates forward
+- **Created** `components/ProgressMini.tsx` — small progress percent + bar in lesson page breadcrumb
+- **Created** `components/SyllabusProgress.tsx` — adds checkboxes + "X/Y completed" counters to the syllabus page
+- **Updated** `app/lessons/[id]/page.tsx` — removed TryItChecklist, added ProgressMini and CompleteAndNext
+- **Updated** `app/syllabus/page.tsx` — replaced static list with SyllabusProgress component
+
 ### Remaining / Known Issues
 - `/exercises/[phase]/page.tsx` — still a stub
 - `/playground/page.tsx` — still a stub

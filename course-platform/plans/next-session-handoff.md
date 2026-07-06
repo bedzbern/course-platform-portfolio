@@ -50,7 +50,9 @@ course-platform/
 │   ├── Footer.tsx                # Simple footer
 │   ├── MarkComplete.tsx          # Firestore toggle per lesson
 │   ├── CopyCode.tsx              # "Copy" button on code blocks
-│   ├── TryItChecklist.tsx        # localStorage checklist widget
+│   ├── CompleteAndNext.tsx       # "Complete & Continue →" button (marks + navigates)
+│   ├── ProgressMini.tsx          # Small progress bar in lesson breadcrumb
+│   ├── SyllabusProgress.tsx      # Checkboxes + phase counters on syllabus page
 │   ├── CodePlayground.tsx        # Reusable editor (used in lessons + standalone)
 │   └── SnapshotViewer.tsx        # Read-only tabbed snapshot code viewer — PICK UP HERE
 ├── lib/
@@ -75,9 +77,10 @@ course-platform/
 |---------|-----------|-------------|
 | **Mark Complete** | `MarkComplete.tsx` | Toggle button in breadcrumb, syncs to Firestore per user |
 | **Copy Code** | `CopyCode.tsx` → `PreWrapper` | Hover code block → "Copy" button appears |
-| **Try It Checklist** | `TryItChecklist.tsx` | Add/check-off tasks, persists in localStorage |
 | **Code Playground** | `CodePlayground.tsx` | HTML/CSS/JS editor (Monaco Editor, vs-dark) + Run + iframe preview + Preview in New Tab |
-| **Prev / Next Nav** | Built into `page.tsx` | Sequential lesson links at bottom |
+| **Prev / Next Nav** | `CompleteAndNext.tsx` + `page.tsx` | Prev link + "Complete & Continue →" button that auto-marks lesson complete in Firestore |
+| **Progress Mini** | `ProgressMini.tsx` | Small progress bar in lesson breadcrumb |
+| **Syllabus Progress** | `SyllabusProgress.tsx` | Checkboxes + "{n}/{total} completed" per phase on the syllabus page |
 
 ### Auth & Progress
 - Firebase Auth with email/password (Login + Register pages)
@@ -136,10 +139,11 @@ Loaded at build time via `lib/snapshots.ts` using `fs`.
 ## What's Likely Next
 
 1. **Complete the Phase Exercises** — `/exercises/[phase]/page.tsx` and `/playground/page.tsx` files are stubs that need full implementation
-2. **Polish the exercise UI** — Snapshot viewer layout, responsive pass
-3. **Deploy** — The course platform could be deployed to Vercel
-4. **Course content updates** — Any edits to the `.md` lesson files
-5. **Add more phases** if the course expands
+2. **Complete `lib/snapshots.ts`** — needs `fs`-based snapshot loading wired up
+3. **Wire SnapshotViewer into exercise pages** — currently renders code but exercise page layout isn't connected
+4. **Deploy** — The course platform could be deployed to Vercel
+5. **Course content updates** — Any edits to the `.md` lesson files
+6. **Student verification** — A real student should follow the 37 lessons from Phase 1 through 6 to verify correctness
 
 ---
 
@@ -169,6 +173,32 @@ Two complementary changes to give every code display a uniform dark editor look:
   - `@monaco-editor/react` — Monaco Editor wrapper for React
   - `rehype-highlight` — syntax highlighting plugin for react-markdown
 
+**4. Monaco editor height fix** (`components/CodePlayground.tsx`, `components/SnapshotViewer.tsx`)
+- Monaco was rendering at only ~86px because the flex chain had a gap: the `inner` component's `flex-1` had no effect since its parent `div.h-[500px]` was not a flex container
+- Fix: added `flex flex-col` to `div.h-[500px] sm:h-[60vh]` at line 327
+- Also added `h-full` and `height="100%"` to the Monaco wrapper and `<MonacoEditor>` prop (lines 215-217)
+- Added `automaticLayout: true` to Monaco options in both `CodePlayground.tsx` and `SnapshotViewer.tsx` so the editor re-measures when the flex layout resolves
+
+**5. Full-width layout** (all main pages)
+- Changed `max-w-4xl`/`max-w-5xl mx-auto px-6` → `w-full px-4 sm:px-6 lg:px-8` on:
+  - `app/lessons/[id]/page.tsx` (lesson content + playground now spans full width)
+  - `app/syllabus/page.tsx`
+  - `app/exercises/[phase]/page.tsx`
+  - `app/progress/page.tsx`
+- Each page now fills 100% of `<main>`, with responsive padding that shrinks on small screens
+
+**6. Progress tracking overhaul**
+- **Deleted** `components/TryItChecklist.tsx` — user deemed it useless
+- **Created** `components/CompleteAndNext.tsx` — red "Complete & Continue →" button that marks the current lesson complete in Firestore, then navigates to the next lesson. Replaces the previous plain `<Link>` for "Next"
+- **Created** `components/ProgressMini.tsx` — small text + bar (e.g., "32%") shown in the lesson page breadcrumb, so the user always sees overall course progress
+- **Created** `components/SyllabusProgress.tsx` — wraps the syllabus page lesson list with:
+  - Checkboxes: filled red checkmark for completed, empty bordered box for incomplete
+  - Phase counters: "3/10 completed" next to each phase heading
+  - Dimmed style for completed lesson titles
+  - Respects `loading` from `useAuth()` and has try/catch on Firestore fetch
+- **Updated** `app/lessons/[id]/page.tsx` — removed TryItChecklist import/usage; added ProgressMini in breadcrumb; replaced plain Next `<Link>` with CompleteAndNext
+- **Updated** `app/syllabus/page.tsx` — replaced static phase loop with `<SyllabusProgress phases={phases} />`
+
 ### Remaining / Known Issues
 
 - `/exercises/[phase]/page.tsx` — still a stub, needs full implementation
@@ -176,6 +206,7 @@ Two complementary changes to give every code display a uniform dark editor look:
 - `components/SnapshotViewer.tsx` — now renders code, but exercise page layout is not wired up
 - `lib/snapshots.ts` — still a stub, needs `fs`-based snapshot loading
 - Monaco editor textarea fallback not tested in older browsers
+- Syllabus and lesson page progress requires Firebase auth — logged-out users see 0% (no way to mark progress without an account)
 
 ---
 
@@ -189,6 +220,9 @@ Two complementary changes to give every code display a uniform dark editor look:
 6. **Code Playground** uses `Blob` URLs for "Preview in New Tab" — `URL.revokeObjectURL` is called after 10s delay.
 7. **Monaco Editor (`@monaco-editor/react`)** must ALWAYS be imported via `dynamic(() => import(...), { ssr: false })` — it references `window` and will crash on the server. Never import it statically.
 8. **SnapshotViewer** uses `detectLang(name)` to map file extensions (`html`, `css`, `js`) to Monaco language IDs. If a snapshot adds new file types, update this mapper.
+9. **CompleteAndNext** marks the current lesson as complete in Firestore via `setDoc` merge — it reads the existing array, appends the current lesson ID if not already present, then calls `router.push()`. It does NOT check if Firestore write succeeds before navigating.
+10. **SyllabusProgress and ProgressMini** both respect `loading` from `useAuth()` — they show nothing until auth state resolves. If Firebase is unavailable (no env vars), they show 0% / "0/N" silently.
+11. **All main pages** now use `w-full px-4 sm:px-6 lg:px-8` instead of `max-w-* mx-auto` — content fills the full width. If you add a new page, use the same pattern for consistency.
 
 ---
 
