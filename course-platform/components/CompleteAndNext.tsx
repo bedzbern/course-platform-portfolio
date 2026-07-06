@@ -19,10 +19,11 @@ export function CompleteAndNext({ currentId, nextId, nextLabel }: Props) {
     if (user && db) {
       const ref = doc(db!, 'progress', user.uid);
       const snap = await getDoc(ref);
-      const list: string[] = snap.exists() ? (snap.data().completed || []) : [];
+      const data = snap.exists() ? snap.data() : {};
+      const list: string[] = data.completed || [];
       if (!list.includes(currentId)) {
         list.push(currentId);
-        await setDoc(ref, { completed: list });
+        await setDoc(ref, { ...data, completed: list });
       }
     }
     if (nextId) {

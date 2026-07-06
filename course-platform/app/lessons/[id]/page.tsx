@@ -9,6 +9,7 @@ import { MarkComplete } from '@/components/MarkComplete';
 import { ProgressMini } from '@/components/ProgressMini';
 import { CompleteAndNext } from '@/components/CompleteAndNext';
 import { CodePlayground } from '@/components/CodePlayground';
+import { ExerciseRenderer } from '@/components/ExerciseRenderer';
 
 export async function generateStaticParams() {
   return getAllLessons().map(l => ({ id: l.id }));
@@ -58,6 +59,8 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       </div>
 
       <LessonContent content={content} />
+
+      <ExerciseRenderer lessonId={id} />
 
       <CodePlayground
         initialHtml={initialHtml}

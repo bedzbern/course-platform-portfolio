@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { getPhasePoints, TOTAL_COURSE_POINTS } from '@/lib/exercises';
 
 interface LessonInfo {
   id: string;
@@ -21,6 +22,7 @@ interface PhaseInfo {
 export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
   const { user, loading: authLoading } = useAuth();
   const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [scores, setScores] = useState<Record<string, any>>({});
   const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
@@ -34,7 +36,9 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
         const ref = doc(db!, 'progress', user.uid);
         const snap = await getDoc(ref);
         if (snap.exists()) {
-          setCompleted(new Set(snap.data().completed || []));
+          const data = snap.data();
+          setCompleted(new Set(data.completed || []));
+          setScores(data.exerciseScores || {});
         }
       } catch {
         // Firestore unavailable — show empty progress
@@ -46,10 +50,27 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
 
   const ready = !authLoading;
 
+  const userTotalPoints = Object.values(scores).reduce((sum: number, s: any) => sum + (s.earned || 0), 0);
+
   return (
     <>
+      {ready && (
+        <div className="mb-8 p-4 bg-white border-4 border-[#0d0d0d] flex items-center gap-4">
+          <span className="text-sm font-bold">Total Points</span>
+          <span className="text-2xl font-bold text-[#cc0000]">{userTotalPoints}</span>
+          <span className="text-zinc-500 text-sm">/ {TOTAL_COURSE_POINTS}</span>
+          <div className="flex-1 h-4 bg-zinc-300 border border-[#0d0d0d] max-w-xs">
+            <div className="h-full bg-[#cc0000] transition-all" style={{ width: `${TOTAL_COURSE_POINTS > 0 ? Math.round((userTotalPoints / TOTAL_COURSE_POINTS) * 100) : 0}%` }} />
+          </div>
+        </div>
+      )}
       {phases.map((phase) => {
         const phaseDone = phase.lessons.filter(l => completed.has(l.id)).length;
+        const phasePts = getPhasePoints(phase.phase);
+        const phaseEarned = phase.lessons.reduce((sum, l) => {
+          const exIds = Object.keys(scores).filter(id => id.startsWith(l.id.split('-')[0] + '-' + l.id.split('-')[1] + '-'));
+          return sum + exIds.reduce((s, id) => s + (scores[id]?.earned || 0), 0);
+        }, 0);
         return (
           <div key={phase.phase} className="mb-12">
             <div className="flex items-center gap-3 mb-4">
@@ -57,8 +78,9 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
               <h2 className="text-2xl font-bold">{phase.label}</h2>
               <span className="text-zinc-400 text-sm">{phase.lessons.length} lessons</span>
               {ready && (
-                <span className="text-xs font-bold text-zinc-500 ml-auto">
-                  {phaseDone}/{phase.lessons.length} completed
+                <span className="text-xs font-bold text-zinc-500 ml-auto flex items-center gap-3">
+                  <span>{phaseDone}/{phase.lessons.length} completed</span>
+                  <span>{phaseEarned}/{phasePts.total} pts</span>
                 </span>
               )}
             </div>
