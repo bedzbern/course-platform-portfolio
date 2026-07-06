@@ -48,22 +48,18 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
     fetch();
   }, [user, authLoading]);
 
-  const ready = !authLoading;
-
   const userTotalPoints = Object.values(scores).reduce((sum: number, s: any) => sum + (s.earned || 0), 0);
 
   return (
     <>
-      {ready && (
-        <div className="mb-8 p-4 bg-white border-4 border-[#0d0d0d] flex items-center gap-4">
-          <span className="text-sm font-bold">Total Points</span>
-          <span className="text-2xl font-bold text-[#cc0000]">{userTotalPoints}</span>
-          <span className="text-zinc-500 text-sm">/ {TOTAL_COURSE_POINTS}</span>
-          <div className="flex-1 h-4 bg-zinc-300 border border-[#0d0d0d] max-w-xs">
-            <div className="h-full bg-[#cc0000] transition-all" style={{ width: `${TOTAL_COURSE_POINTS > 0 ? Math.round((userTotalPoints / TOTAL_COURSE_POINTS) * 100) : 0}%` }} />
-          </div>
+      <div className="mb-8 p-4 bg-white border-4 border-[#0d0d0d] flex items-center gap-4 min-h-[68px]">
+        <span className="text-sm font-bold">Total Points</span>
+        <span className="text-2xl font-bold text-[#cc0000]">{userTotalPoints}</span>
+        <span className="text-zinc-500 text-sm">/ {TOTAL_COURSE_POINTS}</span>
+        <div className="flex-1 h-4 bg-zinc-300 border border-[#0d0d0d] max-w-xs">
+          <div className="h-full bg-[#cc0000] transition-all" style={{ width: `${TOTAL_COURSE_POINTS > 0 ? Math.round((userTotalPoints / TOTAL_COURSE_POINTS) * 100) : 0}%` }} />
         </div>
-      )}
+      </div>
       {phases.map((phase) => {
         const phaseDone = phase.lessons.filter(l => completed.has(l.id)).length;
         const phasePts = getPhasePoints(phase.phase);
@@ -73,16 +69,14 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
         }, 0);
         return (
           <div key={phase.phase} className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 min-h-[40px]">
               <span className="bg-[#cc0000] text-white px-3 py-1 text-sm font-bold">PHASE {phase.phase}</span>
               <h2 className="text-2xl font-bold">{phase.label}</h2>
               <span className="text-zinc-400 text-sm">{phase.lessons.length} lessons</span>
-              {ready && (
-                <span className="text-xs font-bold text-zinc-500 ml-auto flex items-center gap-3">
-                  <span>{phaseDone}/{phase.lessons.length} completed</span>
-                  <span>{phaseEarned}/{phasePts.total} pts</span>
-                </span>
-              )}
+              <span className="text-xs font-bold text-zinc-500 ml-auto flex items-center gap-3">
+                <span>{phaseDone}/{phase.lessons.length} completed</span>
+                <span>{phaseEarned}/{phasePts.total} pts</span>
+              </span>
             </div>
 
             <div className="border-4 border-[#0d0d0d] divide-y-2 divide-[#0d0d0d]">
@@ -92,14 +86,16 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
                   <Link
                     key={lesson.id}
                     href={`/lessons/${lesson.id}`}
-                    className={`flex items-center gap-4 px-5 py-3 transition-colors group ${
-                      done ? 'bg-[#f0f0e8]' : 'hover:bg-[#e8e0d0]'
+                    className={`flex items-center gap-4 px-5 py-3 transition-all group cursor-pointer border-l-4 border-l-transparent ${
+                      done
+                        ? 'bg-[#f0f0e8]'
+                        : 'hover:bg-[#d8d0c0] hover:border-l-[#cc0000]'
                     }`}
                   >
                     <span className={`w-5 h-5 border-2 shrink-0 flex items-center justify-center ${
                       done
                         ? 'bg-[#cc0000] border-[#cc0000]'
-                        : 'border-[#0d0d0d] group-hover:bg-zinc-200'
+                        : 'border-[#0d0d0d] group-hover:bg-zinc-300'
                     }`}>
                       {done && (
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -115,7 +111,9 @@ export function SyllabusProgress({ phases }: { phases: PhaseInfo[] }) {
                     }`}>
                       {lesson.title}
                     </span>
-                    <span className="ml-auto text-zinc-400 text-xs group-hover:translate-x-1 transition-transform">→</span>
+                    <span className={`ml-auto text-xs font-bold transition-all ${
+                      done ? 'text-zinc-400' : 'text-zinc-500 group-hover:text-[#cc0000] group-hover:translate-x-1'
+                    }`}>→</span>
                   </Link>
                 );
               })}

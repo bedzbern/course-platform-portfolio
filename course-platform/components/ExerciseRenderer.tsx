@@ -35,12 +35,16 @@ export function ExerciseRenderer({ lessonId }: Props) {
   };
 
   if (exercises.length === 0) return null;
-  if (!fetched) return null;
 
   return (
     <div className="mt-8 space-y-6">
       <h2 className="text-xl font-bold border-b-2 border-[#0d0d0d] pb-1">Lesson Exercises</h2>
-      {exercises.map((ex) => {
+      {!fetched && (
+        <div className="border-4 border-[#0d0d0d] bg-white p-5 text-sm text-zinc-400">
+          Loading exercises...
+        </div>
+      )}
+      {fetched && exercises.map((ex) => {
         const score = scores[ex.id];
         const completed = !!score && score.earned >= score.total;
         return (

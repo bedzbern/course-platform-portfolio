@@ -15,8 +15,9 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    const loginEmail = email.trim().toLowerCase() === 'admin' ? 'admin@admin.com' : email;
     try {
-      await login(email, password);
+      await login(loginEmail, password);
       router.push('/progress');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -30,8 +31,8 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type="email"
-          placeholder="Email"
+          type="text"
+          placeholder="Email or username"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required

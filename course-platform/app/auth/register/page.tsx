@@ -19,8 +19,9 @@ export default function RegisterPage() {
       setError('Password must be at least 6 characters');
       return;
     }
+    const regEmail = email.trim().toLowerCase() === 'admin' ? 'admin@admin.com' : email;
     try {
-      await register(email, password);
+      await register(regEmail, password);
       router.push('/progress');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -34,8 +35,8 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type="email"
-          placeholder="Email"
+          type="text"
+          placeholder="Email or username"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required

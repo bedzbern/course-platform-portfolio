@@ -5,7 +5,6 @@ import path from 'path';
 import { getLessonById, getAdjacentLessons, getAllLessons } from '@/lib/lessons';
 import { getLessonStartCode, getLessonEndCode } from '@/lib/lesson-snapshots';
 import { LessonContent } from './LessonContent';
-import { MarkComplete } from '@/components/MarkComplete';
 import { ProgressMini } from '@/components/ProgressMini';
 import { CompleteAndNext } from '@/components/CompleteAndNext';
 import { CodePlayground } from '@/components/CodePlayground';
@@ -54,7 +53,6 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <span className="font-mono">{lesson.number}</span>
         <span className="ml-auto flex items-center gap-4">
           <ProgressMini />
-          <MarkComplete lessonId={id} />
         </span>
       </div>
 

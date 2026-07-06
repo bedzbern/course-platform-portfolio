@@ -11,14 +11,10 @@ export function ProgressMini() {
   const { user, loading: authLoading } = useAuth();
   const [pct, setPct] = useState(0);
   const [points, setPoints] = useState(0);
-  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || !db) {
-      setFetched(true);
-      return;
-    }
+    if (!user || !db) return;
     const fetch = async () => {
       try {
         const ref = doc(db!, 'progress', user.uid);
@@ -32,12 +28,9 @@ export function ProgressMini() {
       } catch {
         // Firestore unavailable
       }
-      setFetched(true);
     };
     fetch();
   }, [user, authLoading]);
-
-  if (!fetched && authLoading) return null;
 
   return (
     <div className="flex items-center gap-3 text-xs">
