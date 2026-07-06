@@ -45,6 +45,7 @@ export function SnapshotViewer({ files }: { files: SnapshotFile[] }) {
           value={current?.content || ''}
           options={{
             readOnly: true,
+            automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 12,
             scrollBeyondLastLine: false,

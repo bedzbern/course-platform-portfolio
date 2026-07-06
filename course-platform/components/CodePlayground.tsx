@@ -212,14 +212,16 @@ ${html}
           </button>
         ))}
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="h-full flex-1 min-h-0">
         <MonacoEditor
+          height="100%"
           key={tab}
           language={tab === 'js' ? 'javascript' : tab}
           theme="vs-dark"
           value={code.value}
           onChange={(val) => code.set(val || '')}
           options={{
+            automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 13,
             scrollBeyondLastLine: false,
@@ -322,7 +324,7 @@ ${html}
 
       {open && (
         <div className="border-t-2 border-[#0d0d0d]">
-          <div className="h-[500px] sm:h-[60vh]">
+          <div className="h-[500px] sm:h-[60vh] flex flex-col">
             {inner}
           </div>
         </div>
