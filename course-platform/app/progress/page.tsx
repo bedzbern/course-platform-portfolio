@@ -15,6 +15,7 @@ export default function ProgressPage() {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [scores, setScores] = useState<Record<string, any>>({});
   const [loaded, setLoaded] = useState(false);
+  const [selectedPhases, setSelectedPhases] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!loading && !user) {
@@ -36,6 +37,50 @@ export default function ProgressPage() {
     };
     fetchProgress();
   }, [user]);
+
+  const togglePhase = (phase: number) => {
+    setSelectedPhases(prev => {
+      const next = new Set(prev);
+      next.has(phase) ? next.delete(phase) : next.add(phase);
+      return next;
+    });
+  };
+
+  const resetSelectedPhases = async () => {
+    const phases = getLessonsByPhase().filter(p => selectedPhases.has(p.phase));
+    const lessonIds = new Set(phases.flatMap(p => p.lessons.map(l => l.id)));
+
+    const phasePrefixes = new Set(Array.from(selectedPhases).map(p => `0${p}-`));
+
+    const newCompleted = new Set(completed);
+    lessonIds.forEach(id => newCompleted.delete(id));
+
+    const newScores = { ...scores };
+    Object.keys(newScores).forEach(key => {
+      for (const prefix of phasePrefixes) {
+        if (key.startsWith(prefix)) {
+          delete newScores[key];
+          break;
+        }
+      }
+    });
+
+    const totalPoints = Object.values(newScores).reduce((sum: number, s: any) => sum + (s.earned || 0), 0);
+
+    if (!window.confirm(`Reset progress for ${selectedPhases.size} selected phase(s)? This cannot be undone.`)) return;
+
+    if (user && db) {
+      await setDoc(doc(db!, 'progress', user.uid), {
+        completed: Array.from(newCompleted),
+        exerciseScores: newScores,
+        totalPoints,
+      });
+    }
+
+    setCompleted(newCompleted);
+    setScores(newScores);
+    setSelectedPhases(new Set());
+  };
 
   if (loading || !loaded) {
     return <div className="text-center py-20 text-zinc-500">Loading...</div>;
@@ -79,10 +124,19 @@ export default function ProgressPage() {
           const exIds = Object.keys(scores).filter(id => id.startsWith(l.id.split('-')[0] + '-' + l.id.split('-')[1] + '-'));
           return sum + exIds.reduce((s, id) => s + (scores[id]?.earned || 0), 0);
         }, 0);
+        const checked = selectedPhases.has(phase.phase);
         return (
           <div key={phase.phase} className="mb-8">
             <div className="flex items-center gap-3 mb-3">
-              <span className="bg-[#cc0000] text-white px-3 py-1 text-sm font-bold">PHASE {phase.phase}</span>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => togglePhase(phase.phase)}
+                  className="w-4 h-4 accent-[#cc0000]"
+                />
+                <span className="bg-[#cc0000] text-white px-3 py-1 text-sm font-bold">PHASE {phase.phase}</span>
+              </label>
               <h2 className="text-xl font-bold">{phase.label}</h2>
               <span className="text-zinc-400 text-xs ml-auto flex items-center gap-3">
                 <span>{phaseDone}/{phase.lessons.length} completed</span>
@@ -128,18 +182,13 @@ export default function ProgressPage() {
         );
       })}
 
-      {user && db && (
-        <div className="mt-12 border-t-2 border-[#0d0d0d] pt-8">
+      {user && db && selectedPhases.size > 0 && (
+        <div className="mt-8 border-t-2 border-[#0d0d0d] pt-6">
           <button
-            onClick={async () => {
-              if (!window.confirm('Reset all progress and exercise scores? This cannot be undone.')) return;
-              await setDoc(doc(db!, 'progress', user.uid), { completed: [], exerciseScores: {}, totalPoints: 0 });
-              setCompleted(new Set());
-              setScores({});
-            }}
+            onClick={resetSelectedPhases}
             className="border-2 border-red-500 text-red-600 px-5 py-2.5 text-sm font-bold hover:bg-red-50 transition-colors cursor-pointer"
           >
-            Reset My Progress
+            Reset Selected Phases ({selectedPhases.size})
           </button>
         </div>
       )}
