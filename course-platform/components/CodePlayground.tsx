@@ -203,41 +203,30 @@ export function CodePlayground({
     return () => window.removeEventListener('message', handler);
   }, []);
 
-  const buildDocument = () => `
-<!DOCTYPE html>
+  const buildDocument = () => {
+    const consoleScript = `(function(){var origLog=console.log;var origWarn=console.warn;var origError=console.error;console.log=function(){parent.postMessage({type:'console',message:Array.from(arguments).map(String).join(' ')},'*');return origLog.apply(console,arguments)};console.warn=function(){parent.postMessage({type:'console',message:'\\u26A0 '+Array.from(arguments).map(String).join(' ')},'*');return origWarn.apply(console,arguments)};console.error=function(){parent.postMessage({type:'console',message:'\\u2715 '+Array.from(arguments).map(String).join(' ')},'*');return origError.apply(console,arguments)};window.onerror=function(msg){parent.postMessage({type:'console',message:'\\u2715 '+msg},'*')}})();`;
+    const isFullDoc = /<!DOCTYPE html>/i.test(html.trim());
+    if (isFullDoc) {
+      let result = html;
+      result = result.replace(/<link[^>]*href=["']style\.css["'][^>]*\/?>/gi, `<style>\n${css}\n</style>`);
+      const allJs = js.trim() ? `${consoleScript}\n${js}` : consoleScript;
+      result = result.replace('</body>', `<script>\n${allJs}\n</script>\n</body>`);
+      return result;
+    }
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>${css}</style>
-  <script>
-    (function() {
-      var origLog = console.log;
-      var origWarn = console.warn;
-      var origError = console.error;
-      console.log = function() {
-        parent.postMessage({ type: 'console', message: Array.from(arguments).map(String).join(' ') }, '*');
-        return origLog.apply(console, arguments);
-      };
-      console.warn = function() {
-        parent.postMessage({ type: 'console', message: '\\u26A0 ' + Array.from(arguments).map(String).join(' ') }, '*');
-        return origWarn.apply(console, arguments);
-      };
-      console.error = function() {
-        parent.postMessage({ type: 'console', message: '\\u2715 ' + Array.from(arguments).map(String).join(' ') }, '*');
-        return origError.apply(console, arguments);
-      };
-      window.onerror = function(msg) {
-        parent.postMessage({ type: 'console', message: '\\u2715 ' + msg }, '*');
-      };
-    })();
-  <\/script>
+  <script>${consoleScript}<\/script>
 </head>
 <body>
 ${html}
 <script>${js}<\/script>
 </body>
 </html>`;
+  };
 
   const runCode = () => {
     setConsoleLogs([]);
@@ -445,7 +434,7 @@ ${html}
         ref={iframeRef}
         title="Preview"
         className="w-full flex-1 min-h-0 bg-white"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts"
       />
       {consoleLogs.length > 0 && (
         <div className="border-t-2 border-[#0d0d0d] bg-[#1e1e1e] text-[#d4d4d4] font-mono text-xs shrink-0 max-h-[120px] overflow-y-auto">

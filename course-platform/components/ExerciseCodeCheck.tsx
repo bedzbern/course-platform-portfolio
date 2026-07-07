@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import type { CodeExercise, DOMCheck } from '@/lib/exercises';
+import type { CodeExercise } from '@/lib/exercises';
 import { runDOMChecks, type DOMCheckResult } from '@/lib/dom-checker';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -14,14 +14,26 @@ interface Props {
 }
 
 export function ExerciseCodeCheck({ exercise, completed, onScore }: Props) {
-  const [code, setCode] = useState(exercise.starterCode.html);
+  const [tab, setTab] = useState<'html' | 'css'>('html');
+  const [htmlCode, setHtmlCode] = useState(exercise.starterCode.html);
+  const [cssCode, setCssCode] = useState(exercise.starterCode.css);
   const [results, setResults] = useState<DOMCheckResult[] | null>(null);
   const [checking, setChecking] = useState(false);
+
+  const hasCss = !!exercise.starterCode.css;
+
+  const buildDocument = () => {
+    if (cssCode.trim()) {
+      return htmlCode.replace('</head>', `<style>\n${cssCode}\n</style>\n</head>`);
+    }
+    return htmlCode;
+  };
 
   const handleCheck = async () => {
     setChecking(true);
     setResults(null);
-    const res = await runDOMChecks(code, exercise.checks);
+    const fullDoc = buildDocument();
+    const res = await runDOMChecks(fullDoc, exercise.checks);
     setResults(res);
     setChecking(false);
 
@@ -35,6 +47,13 @@ export function ExerciseCodeCheck({ exercise, completed, onScore }: Props) {
 
   const allPassed = results && results.every(r => r.passed);
 
+  const currentCode = tab === 'html' ? htmlCode : cssCode;
+  const setCurrentCode = (val: string) => {
+    if (tab === 'html') setHtmlCode(val);
+    else setCssCode(val);
+  };
+  const editorLanguage = tab === 'html' ? 'html' : 'css';
+
   return (
     <div className="border-4 border-[#0d0d0d] bg-white">
       <div className="bg-[#0d0d0d] text-[#f5f0e8] px-5 py-2 font-bold text-sm flex items-center justify-between">
@@ -47,13 +66,38 @@ export function ExerciseCodeCheck({ exercise, completed, onScore }: Props) {
           <p className="text-sm text-zinc-600">{exercise.instructions}</p>
         </div>
 
+        <div className="flex gap-1 border-b-2 border-[#0d0d0d]">
+          <button
+            onClick={() => setTab('html')}
+            className={`px-4 py-1.5 text-xs font-bold cursor-pointer border-t-2 border-l-2 border-r-2 rounded-t-sm -mb-[2px] transition-colors ${
+              tab === 'html'
+                ? 'bg-[#0d0d0d] text-[#f5f0e8] border-[#0d0d0d]'
+                : 'bg-zinc-100 text-zinc-600 border-transparent hover:bg-zinc-200'
+            }`}
+          >
+            HTML
+          </button>
+          {hasCss && (
+            <button
+              onClick={() => setTab('css')}
+              className={`px-4 py-1.5 text-xs font-bold cursor-pointer border-t-2 border-l-2 border-r-2 rounded-t-sm -mb-[2px] transition-colors ${
+                tab === 'css'
+                  ? 'bg-[#0d0d0d] text-[#f5f0e8] border-[#0d0d0d]'
+                  : 'bg-zinc-100 text-zinc-600 border-transparent hover:bg-zinc-200'
+              }`}
+            >
+              CSS
+            </button>
+          )}
+        </div>
+
         <div className="h-[280px] border-2 border-[#0d0d0d]">
           <MonacoEditor
             height="100%"
-            language="html"
+            language={editorLanguage}
             theme="vs-dark"
-            value={code}
-            onChange={(val) => setCode(val || '')}
+            value={currentCode}
+            onChange={(val) => setCurrentCode(val || '')}
             options={{
               automaticLayout: true,
               minimap: { enabled: false },
@@ -78,7 +122,7 @@ export function ExerciseCodeCheck({ exercise, completed, onScore }: Props) {
             {checking ? 'Checking...' : completed ? 'Completed' : 'Run Checks →'}
           </button>
           <button
-            onClick={() => { setCode(exercise.starterCode.html); setResults(null); }}
+            onClick={() => { setHtmlCode(exercise.starterCode.html); setCssCode(exercise.starterCode.css); setResults(null); }}
             className="border-2 border-[#0d0d0d] px-4 py-2 text-sm font-bold hover:bg-zinc-100 transition-colors cursor-pointer"
           >
             Reset Code

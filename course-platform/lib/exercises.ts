@@ -10,10 +10,11 @@ export interface ChoiceExercise {
 }
 
 export interface DOMCheck {
-  type: 'element-exists' | 'element-count' | 'has-text' | 'has-attr';
+  type: 'element-exists' | 'element-count' | 'has-text' | 'has-attr' | 'has-style';
   selector: string;
   expected?: string | number;
   attr?: string;
+  property?: string;
   hint?: string;
 }
 
@@ -442,7 +443,710 @@ const PHASE1_CODE: CodeExercise[] = [
   },
 ];
 
-export const ALL_EXERCISES: Exercise[] = [...PHASE1_CHOICE, ...PHASE1_CODE];
+const P2_BASE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <span class="logo">PORTFOLIO</span>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section id="hero">
+    <div class="hero-content">
+      <h1>Your Name</h1>
+      <p class="tagline">Title / Tagline</p>
+      <a href="#projects" class="btn">View My Work ↓</a>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="container">
+      <h2>About Me</h2>
+      <div class="about-content">
+        <p>Write your bio here. Who you are, what you do, what you\'re passionate about.</p>
+        <p>This will be your real story — not placeholder text from a template.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="container">
+      <h2>Projects</h2>
+      <div class="project-grid">
+        <div class="project-card">
+          <img src="https://picsum.photos/seed/project1/400/250" alt="Project 1" loading="lazy">
+          <h3>Project 1</h3>
+          <p>Short description of your first project.</p>
+          <a href="project-1.html">View Details →</a>
+        </div>
+        <div class="project-card">
+          <img src="https://picsum.photos/seed/project2/400/250" alt="Project 2" loading="lazy">
+          <h3>Project 2</h3>
+          <p>Short description of your second project.</p>
+          <a href="project-2.html">View Details →</a>
+        </div>
+        <div class="project-card">
+          <img src="https://picsum.photos/seed/project3/400/250" alt="Project 3" loading="lazy">
+          <h3>Project 3</h3>
+          <p>Short description of your third project.</p>
+          <a href="project-3.html">View Details →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="container">
+      <h2>Skills</h2>
+      <div class="skill-list">
+        <div class="skill">
+          <span>HTML & CSS</span>
+          <div class="bar"><div class="fill" style="width:80%"></div></div>
+        </div>
+        <div class="skill">
+          <span>JavaScript</span>
+          <div class="bar"><div class="fill" style="width:60%"></div></div>
+        </div>
+        <div class="skill">
+          <span>Python</span>
+          <div class="bar"><div class="fill" style="width:50%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="container">
+      <h2>Contact</h2>
+      <form>
+        <input type="text" placeholder="Your Name">
+        <input type="email" placeholder="Your Email">
+        <textarea placeholder="Your Message"></textarea>
+        <button type="submit" class="btn">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Your Name</p>
+  </footer>
+
+</body>
+</html>`;
+
+const P2_CSS_01 = `*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}`;
+
+const P2_CSS_02 = `${P2_CSS_01}
+
+body {
+  font-family: 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif;
+  background: #f5f0e8;
+  color: #0d0d0d;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, .logo {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 3px;
+}
+
+:root {
+  --ink: #0d0d0d;
+  --paper: #f5f0e8;
+  --red: #cc0000;
+  --gray: #555;
+  --light-gray: #ddd;
+}`;
+
+const P2_CSS_04 = `${P2_CSS_02}
+
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: var(--ink);
+  border-bottom: 4px solid var(--red);
+  z-index: 100;
+}
+
+.nav-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+}
+
+.logo {
+  color: var(--paper);
+  font-size: 1.2rem;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 16px;
+}
+
+nav a {
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+nav a:hover {
+  color: var(--red);
+}`;
+
+const P2_CSS_05 = `${P2_CSS_04}
+
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url('https://picsum.photos/seed/manga-bg/1600/900');
+  background-size: cover;
+  background-position: center;
+  color: var(--paper);
+  border-bottom: 4px solid var(--ink);
+  padding: 20px;
+}`;
+
+const P2_CSS_06 = `${P2_CSS_05}
+
+.hero-content h1 {
+  font-size: clamp(3rem, 12vw, 8rem);
+  margin-bottom: 8px;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 28px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--red);
+  color: var(--paper);
+  padding: 12px 28px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 3px solid var(--paper);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}`;
+
+const P2_CSS_07 = `${P2_CSS_06}
+
+section {
+  padding: 80px 20px;
+}
+
+section:nth-child(even) {
+  background: var(--paper);
+}
+
+section:nth-child(odd) {
+  background: #e8e0d0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 2rem;
+  letter-spacing: 3px;
+  margin-bottom: 40px;
+  text-align: center;
+  position: relative;
+}
+
+h2::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--red);
+  margin: 10px auto 0;
+}`;
+
+const P2_CSS_08 = `${P2_CSS_07}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.project-card {
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  text-align: center;
+  transition: 0.2s;
+  overflow: hidden;
+}`;
+
+const P2_CSS_09 = `${P2_CSS_08}
+
+.project-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.project-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 3px solid var(--ink);
+}
+
+.project-card h3 {
+  font-size: 1.3rem;
+  margin: 16px 0 8px;
+  padding: 0 16px;
+}
+
+.project-card p {
+  font-size: 0.9rem;
+  color: var(--gray);
+  padding: 0 16px 16px;
+}
+
+.project-card a {
+  display: inline-block;
+  margin: 0 16px 20px;
+  padding: 6px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  transition: 0.2s;
+}
+
+.project-card a:hover {
+  background: var(--red);
+  border-color: var(--red);
+}`;
+
+const PHASE2_CHOICE: ChoiceExercise[] = [
+  // 02-01
+  {
+    id: '02-01-q1', lessonId: '02-01-link-css-reset', type: 'choice',
+    prompt: 'What does the universal selector `*` target in CSS?',
+    options: [
+      'All elements on the page',
+      'Only <div> elements',
+      'Only the first element',
+      'Inline elements only',
+    ],
+    correctIndex: 0,
+    points: 5,
+    explanation: 'The `*` universal selector matches every element on the page. It\'s commonly used in CSS resets to remove default margins and padding.',
+  },
+  {
+    id: '02-01-q2', lessonId: '02-01-link-css-reset', type: 'choice',
+    prompt: 'What does `box-sizing: border-box` do to an element?',
+    options: [
+      'Adds a border around the content area',
+      'Includes padding and border in the element\'s total width',
+      'Removes the box shadow from the element',
+      'Centers the element within its parent',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`box-sizing: border-box` makes width/height include padding and border. Without it, padding adds to the total width, making layouts harder to control.',
+  },
+
+  // 02-02
+  {
+    id: '02-02-q1', lessonId: '02-02-css-variables-body', type: 'choice',
+    prompt: 'How do you define a CSS custom property (variable)?',
+    options: ['$ink: #000;', '--ink: #000;', '@ink: #000;', 'var(--ink): #000;'],
+    correctIndex: 1,
+    points: 5,
+    explanation: 'CSS custom properties start with `--`, like `--ink: #000`. Use `var(--ink)` to reference them. They\'re inherited and can be overridden in any rule.',
+  },
+  {
+    id: '02-02-q2', lessonId: '02-02-css-variables-body', type: 'choice',
+    prompt: 'Which CSS property sets the overall page background color?',
+    options: ['color', 'background-color', 'bgcolor', 'fill'],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`background-color` sets the background color. On `body` it fills the entire page. `color` sets text color — a common mix-up for beginners.',
+  },
+
+  // 02-03
+  {
+    id: '02-03-q1', lessonId: '02-03-google-fonts', type: 'choice',
+    prompt: 'Which HTML tag is used to load a Google Font on your page?',
+    options: ['<font>', '<link>', '<style>', '<script>'],
+    correctIndex: 1,
+    points: 5,
+    explanation: 'Google Fonts are loaded with a `<link>` tag in the `<head>`. The href points to Google\'s CSS API URL with the font family and weights you want.',
+  },
+  {
+    id: '02-03-q2', lessonId: '02-03-google-fonts', type: 'choice',
+    prompt: 'What does `rel="preconnect"` on a `<link>` do for Google Fonts?',
+    options: [
+      'Downloads the font file immediately',
+      'Establishes an early connection to the font server before the browser needs it',
+      'Prevents the font from loading on slow connections',
+      'Connects the font to a local database',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`preconnect` tells the browser to set up an early connection to the font server. This reduces latency when the font CSS is requested, making fonts load faster.',
+  },
+
+  // 02-04
+  {
+    id: '02-04-q1', lessonId: '02-04-nav-styling', type: 'choice',
+    prompt: 'What does `position: fixed` do to a navigation bar?',
+    options: [
+      'Keeps it in normal document flow like any other element',
+      'Sticks it to the viewport so it stays visible while scrolling',
+      'Fixes layout bugs caused by floating elements',
+      'Centers the nav bar horizontally on the page',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`position: fixed` removes the element from normal flow and positions it relative to the viewport. It stays in place while the page scrolls — perfect for nav bars.',
+  },
+  {
+    id: '02-04-q2', lessonId: '02-04-nav-styling', type: 'choice',
+    prompt: 'Which Flexbox property controls horizontal alignment of items?',
+    options: ['align-items', 'justify-content', 'flex-direction', 'flex-wrap'],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`justify-content` aligns items along the main axis (horizontal by default). `align-items` controls the cross axis (vertical by default).',
+  },
+
+  // 02-05
+  {
+    id: '02-05-q1', lessonId: '02-05-hero-background', type: 'choice',
+    prompt: 'What does `min-height: 100vh` on the hero section do?',
+    options: [
+      'Sets the height to exactly 100 pixels',
+      'Makes the hero at least as tall as the browser viewport',
+      'Sets the maximum height to 100% of the parent',
+      'Creates a 100px vertical margin around the hero',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`100vh` means 100% of the viewport height. `min-height` ensures the hero is at least this tall, but can grow if content needs more space.',
+  },
+  {
+    id: '02-05-q2', lessonId: '02-05-hero-background', type: 'choice',
+    prompt: 'How do you layer a dark overlay on top of a background image?',
+    options: [
+      'Use a separate <div> with a dark background',
+      'Use `linear-gradient()` as the first value in `background-image`',
+      'Set `background-filter: darken()`',
+      'Add `overlay-color: black` to the section',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: 'Stack a `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65))` before the image URL in `background-image`. The gradient sits on top of the image.',
+  },
+
+  // 02-06
+  {
+    id: '02-06-q1', lessonId: '02-06-hero-typography', type: 'choice',
+    prompt: 'What does `clamp(3rem, 12vw, 8rem)` do?',
+    options: [
+      'Sets three different font sizes that cycle on each click',
+      'Creates a responsive font size between 3rem and 8rem, scaling with 12vw',
+      'Locks the font size to exactly 3rem on all screens',
+      'Clamps the element to a fixed 12vw width with 3rem padding',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`clamp(MIN, PREFERRED, MAX)` sets a responsive value. Here font-size is 12vw but never below 3rem or above 8rem — fluid responsive typography without media queries.',
+  },
+  {
+    id: '02-06-q2', lessonId: '02-06-hero-typography', type: 'choice',
+    prompt: 'Which pseudo-class triggers styles when hovering over an element?',
+    options: [':active', ':focus', ':hover', ':visited'],
+    correctIndex: 2,
+    points: 5,
+    explanation: '`:hover` applies styles when the mouse pointer is over an element. It\'s commonly used for buttons, links, and cards to provide visual feedback.',
+  },
+
+  // 02-07
+  {
+    id: '02-07-q1', lessonId: '02-07-section-layout', type: 'choice',
+    prompt: 'What does `section:nth-child(even)` target?',
+    options: [
+      'Every <section> element on the page',
+      'Only the first <section>',
+      'Even-numbered <section> elements (2nd, 4th, 6th...)',
+      'Sections that have a class name "even"',
+    ],
+    correctIndex: 2,
+    points: 5,
+    explanation: '`:nth-child(even)` selects elements in even positions (2nd, 4th, 6th...). Use it to alternate section background colors for visual rhythm.',
+  },
+  {
+    id: '02-07-q2', lessonId: '02-07-section-layout', type: 'choice',
+    prompt: 'What does the `::after` pseudo-element do?',
+    options: [
+      'Creates a virtual element after the selected element\'s content',
+      'Runs a JavaScript function after the element loads',
+      'Adds an image overlay on top of the element',
+      'Changes the element\'s CSS after a delay',
+    ],
+    correctIndex: 0,
+    points: 5,
+    explanation: '`::after` inserts a decorative element after the content. Combined with `content: ""` and styling, it\'s great for underlines, badges, and visual flourishes.',
+  },
+
+  // 02-08
+  {
+    id: '02-08-q1', lessonId: '02-08-project-grid', type: 'choice',
+    prompt: 'What does `grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))` do?',
+    options: [
+      'Creates exactly 3 fixed-width columns',
+      'Creates responsive columns that automatically wrap as the screen gets narrower',
+      'Sets all columns to exactly 240px wide with no wrapping',
+      'Creates a single column that fills the full width',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`auto-fit` creates as many columns as fit, `minmax(240px, 1fr)` ensures each column is at least 240px but can grow. The grid wraps items to new rows automatically.',
+  },
+  {
+    id: '02-08-q2', lessonId: '02-08-project-grid', type: 'choice',
+    prompt: 'Which CSS property creates space between grid or flex items?',
+    options: ['margin', 'padding', 'gap', 'spacing'],
+    correctIndex: 2,
+    points: 5,
+    explanation: '`gap` (formerly `grid-gap`) creates spacing between items in both grid and flexbox layouts. Unlike `margin`, it doesn\'t add space at the container edges.',
+  },
+
+  // 02-09
+  {
+    id: '02-09-q1', lessonId: '02-09-project-card-hover', type: 'choice',
+    prompt: 'Which CSS property creates a slide/shift effect on hover?',
+    options: ['translate() as a transform value', 'transform: translate()', 'move()', 'shift()'],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`transform: translate(-4px, -4px)` moves the element up and left on hover. Combined with `transition` it creates a smooth, interactive card effect.',
+  },
+  {
+    id: '02-09-q2', lessonId: '02-09-project-card-hover', type: 'choice',
+    prompt: 'What does `object-fit: cover` do on an <img>?',
+    options: [
+      'Stretches the image to fill the container, ignoring aspect ratio',
+      'Maintains aspect ratio while filling the container, cropping excess',
+      'Adds a decorative cover border around the image',
+      'Centers the image text inside the <img> element',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`object-fit: cover` keeps the image\'s aspect ratio but scales it to cover the container. Parts that don\'t fit are cropped — like CSS `background-size: cover` for images.',
+  },
+
+  // 02-10
+  {
+    id: '02-10-q1', lessonId: '02-10-skills-contact-footer', type: 'choice',
+    prompt: 'Which Flexbox property stacks child elements vertically?',
+    options: ['flex-direction: row', 'flex-direction: column', 'align-items: center', 'flex-wrap: wrap'],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`flex-direction: column` changes the main axis from horizontal to vertical, stacking children top-to-bottom instead of left-to-right.',
+  },
+  {
+    id: '02-10-q2', lessonId: '02-10-skills-contact-footer', type: 'choice',
+    prompt: 'What does `@media (max-width: 600px)` do?',
+    options: [
+      'Applies styles only on screens wider than 600px',
+      'Applies styles only on screens narrower than 600px',
+      'Applies styles only when printing at 600px resolution',
+      'Creates a CSS Grid with 600px-wide columns',
+    ],
+    correctIndex: 1,
+    points: 5,
+    explanation: '`@media (max-width: 600px)` is a media query that targets viewports 600px wide or less — typically phones in portrait orientation. Everything inside applies only on small screens.',
+  },
+];
+
+const PHASE2_CODE: CodeExercise[] = [
+  {
+    id: '02-01-code1', lessonId: '02-01-link-css-reset', type: 'code',
+    prompt: 'Write a CSS reset',
+    instructions: 'Write a CSS reset that targets all elements with the universal selector, removes default margin and padding, sets box-sizing to border-box, and adds smooth scrolling to the html element.',
+    starterCode: { html: P2_BASE_HTML, css: '', js: '' },
+    checks: [
+      { type: 'has-style', selector: '*', property: 'box-sizing', expected: 'border-box', hint: 'Add box-sizing: border-box to *' },
+      { type: 'has-style', selector: '*', property: 'margin', expected: '0px', hint: 'Add margin: 0 to * to remove default spacing' },
+      { type: 'has-style', selector: 'html', property: 'scroll-behavior', expected: 'smooth', hint: 'Add scroll-behavior: smooth to html' },
+    ],
+    points: 15,
+    hint: 'Use the universal selector `*` with `margin: 0; padding: 0; box-sizing: border-box;`. Then add `html { scroll-behavior: smooth; }`.',
+  },
+  {
+    id: '02-02-code1', lessonId: '02-02-css-variables-body', type: 'code',
+    prompt: 'Style the body and add CSS variables',
+    instructions: 'Set the body background to #f5f0e8, text color to #0d0d0d. Define CSS custom properties for ink, paper, red, gray, and light-gray colors. Style headings with the Bangers font family.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_01, js: '' },
+    checks: [
+      { type: 'has-style', selector: 'body', property: 'background-color', expected: 'rgb(245, 240, 232)', hint: 'Set body background to #f5f0e8' },
+      { type: 'has-style', selector: 'body', property: 'color', expected: 'rgb(13, 13, 13)', hint: 'Set body text color to #0d0d0d' },
+      { type: 'has-style', selector: 'h1', property: 'letter-spacing', expected: '3px', hint: 'Style h1-h4 with letter-spacing: 3px for the manga title look' },
+    ],
+    points: 15,
+    hint: 'Style body with background, color, font-family. Define :root variables (--ink, --paper, --red, --gray, --light-gray). Set heading font-family to Bangers.',
+  },
+  {
+    id: '02-03-code1', lessonId: '02-03-google-fonts', type: 'code',
+    prompt: 'Add Google Fonts links',
+    instructions: 'Add <link> tags in the HTML <head> to load the Bangers and Noto Sans JP fonts from Google Fonts. Include both the preconnect links and the stylesheet link.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_02, js: '' },
+    checks: [
+      { type: 'element-exists', selector: 'link[href*="fonts.googleapis.com/css2"]', hint: 'Add a Google Fonts stylesheet link with Bangers and Noto Sans JP' },
+      { type: 'element-exists', selector: 'link[rel="preconnect"][href*="fonts.gstatic.com"]', hint: 'Add preconnect link for fonts.gstatic.com' },
+    ],
+    points: 15,
+    hint: 'In the HTML tab, inside <head>, add: <link rel="preconnect" href="https://fonts.googleapis.com">, <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>, and the Google Fonts CSS link.',
+  },
+  {
+    id: '02-04-code1', lessonId: '02-04-nav-styling', type: 'code',
+    prompt: 'Style the navigation bar',
+    instructions: 'Make the nav fixed at the top, full width, with a dark background and red bottom border. Style the nav links using flexbox with a hover color change.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_02, js: '' },
+    checks: [
+      { type: 'has-style', selector: 'nav', property: 'position', expected: 'fixed', hint: 'Set nav to position: fixed so it stays on top while scrolling' },
+      { type: 'has-style', selector: 'nav', property: 'width', expected: '100%', hint: 'Set nav width to 100%' },
+      { type: 'has-style', selector: 'nav ul', property: 'display', expected: 'flex', hint: 'Make the nav menu a flexbox row' },
+    ],
+    points: 15,
+    hint: 'nav: position fixed, full width, dark background. .nav-inner: flexbox with space-between. nav ul: display flex, gap for spacing. nav a: color, no underline, hover color.',
+  },
+  {
+    id: '02-05-code1', lessonId: '02-05-hero-background', type: 'code',
+    prompt: 'Create the hero background',
+    instructions: 'Make the hero section full viewport height, centered with flexbox, and add a background image with a dark gradient overlay.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_04, js: '' },
+    checks: [
+      { type: 'has-style', selector: '#hero', property: 'min-height', expected: '100vh', hint: 'Set #hero min-height to 100vh for a full-screen hero' },
+      { type: 'has-style', selector: '#hero', property: 'display', expected: 'flex', hint: 'Use flexbox on #hero to center content' },
+      { type: 'has-style', selector: '#hero', property: 'background-size', expected: 'cover', hint: 'Set background-size to cover so the image fills the hero' },
+    ],
+    points: 15,
+    hint: '#hero needs min-height: 100vh, display: flex with align-items/justify-content center. For the background: use background-image with linear-gradient overlay + image URL, background-size: cover.',
+  },
+  {
+    id: '02-06-code1', lessonId: '02-06-hero-typography', type: 'code',
+    prompt: 'Style hero typography and button',
+    instructions: 'Style the hero heading with a large responsive font size, add a tagline, and create a call-to-action button with red background and hover effect.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_05, js: '' },
+    checks: [
+      { type: 'has-style', selector: '.btn', property: 'display', expected: 'inline-block', hint: 'Set .btn to display: inline-block for proper padding' },
+      { type: 'has-style', selector: '.btn', property: 'background-color', expected: 'rgb(204, 0, 0)', hint: 'Give .btn a red background (#cc0000)' },
+      { type: 'has-style', selector: '.tagline', property: 'color', expected: 'rgb(204, 204, 204)', hint: 'Set .tagline color to #ccc for contrast against the dark hero' },
+    ],
+    points: 15,
+    hint: '.hero-content h1: use clamp() for responsive font-size. .tagline: lighter color, margin. .btn: inline-block, red bg, white text, no underline, hover effect.',
+  },
+  {
+    id: '02-07-code1', lessonId: '02-07-section-layout', type: 'code',
+    prompt: 'Build section layouts',
+    instructions: 'Style sections with vertical padding and alternating backgrounds. Create a centered container and style section headings with an underline accent.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_06, js: '' },
+    checks: [
+      { type: 'has-style', selector: 'section', property: 'padding-top', expected: '80px', hint: 'Add vertical padding to sections' },
+      { type: 'has-style', selector: '.container', property: 'max-width', expected: '900px', hint: 'Limit .container width for readability' },
+      { type: 'has-style', selector: 'h2', property: 'text-align', expected: 'center', hint: 'Center h2 headings' },
+    ],
+    points: 15,
+    hint: 'section: padding 80px both sides, alternating background via nth-child. .container: max-width 900px, margin auto. h2: center, ::after for red underline.',
+  },
+  {
+    id: '02-08-code1', lessonId: '02-08-project-grid', type: 'code',
+    prompt: 'Create a responsive project grid',
+    instructions: 'Build a CSS Grid for the project cards that automatically wraps columns as the screen narrows. Style each card with a border and overflow hidden.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_07, js: '' },
+    checks: [
+      { type: 'has-style', selector: '.project-grid', property: 'display', expected: 'grid', hint: 'Set .project-grid to display grid' },
+      { type: 'has-style', selector: '.project-grid', property: 'gap', expected: '24px', hint: 'Add gap between project grid items' },
+      { type: 'has-style', selector: '.project-card', property: 'overflow', expected: 'hidden', hint: 'Hide overflow on .project-card' },
+    ],
+    points: 15,
+    hint: '.project-grid: display grid, grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)), gap. .project-card: border, background, overflow hidden.',
+  },
+  {
+    id: '02-09-code1', lessonId: '02-09-project-card-hover', type: 'code',
+    prompt: 'Add card hover effects and image styles',
+    instructions: 'Style project card images with object-fit to maintain aspect ratio. Add a hover effect that shifts the card and shows a shadow. Style card links with a button-like appearance.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_08, js: '' },
+    checks: [
+      { type: 'has-style', selector: '.project-card img', property: 'display', expected: 'block', hint: 'Make card images display: block to remove bottom gap' },
+      { type: 'has-style', selector: '.project-card img', property: 'object-fit', expected: 'cover', hint: 'Use object-fit: cover so images fill the container' },
+      { type: 'has-style', selector: '.project-card a', property: 'font-weight', expected: '700', hint: 'Style card links with bold font-weight' },
+    ],
+    points: 15,
+    hint: '.project-card img: object-fit cover, display block, full width. .project-card:hover: translate and box-shadow. .project-card a: styled like a button with bg, border, hover.',
+  },
+  {
+    id: '02-10-code1', lessonId: '02-10-skills-contact-footer', type: 'code',
+    prompt: 'Style skills, contact form, and footer',
+    instructions: 'Stack the skill bars vertically. Style the contact form inputs with a bold border. Create a dark footer with centered text.',
+    starterCode: { html: P2_BASE_HTML, css: P2_CSS_09, js: '' },
+    checks: [
+      { type: 'has-style', selector: '.skill-list', property: 'display', expected: 'flex', hint: 'Make .skill-list a flex container' },
+      { type: 'has-style', selector: '.skill-list', property: 'flex-direction', expected: 'column', hint: 'Stack skills vertically with flex-direction column' },
+      { type: 'has-style', selector: 'footer', property: 'text-align', expected: 'center', hint: 'Center footer text' },
+    ],
+    points: 15,
+    hint: '.skill-list: flex column, gap. .skill: label + bar column. .bar + .fill for progress. form: max-width, flex column. input/textarea: bold border, padding. footer: dark bg, centered text.',
+  },
+];
+
+export const ALL_EXERCISES: Exercise[] = [...PHASE1_CHOICE, ...PHASE1_CODE, ...PHASE2_CHOICE, ...PHASE2_CODE];
 
 export function getExercisesByLesson(lessonId: string): Exercise[] {
   return ALL_EXERCISES.filter(e => e.lessonId === lessonId);

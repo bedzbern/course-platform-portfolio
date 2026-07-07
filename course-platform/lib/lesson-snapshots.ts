@@ -770,6 +770,21 @@ ${p3Head()}
 </body>
 </html>`;
 
+// Phase 2 HTML without Google Fonts links (for lessons 02-01, 02-02 before GFONTS taught)
+const P2_BODY = P2_HTML.replace(/[\s\S]*<body>([\s\S]*)<\/body>[\s\S]*/, '$1').trim();
+const P2_HTML_NO_FONTS = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+${P2_BODY}
+</body>
+</html>`;
+
 // Phase 3 CSS base (starting from Phase 2 final CSS = P2_CSS_10)
 const P3_HTML_BASE = P2_HTML;
 const P3_CSS_BASE = P2_CSS_10;
@@ -2308,16 +2323,16 @@ const LESSON_END_CODE: Record<string, LessonCode> = {
   '01-10-project-detail-pages': { html: P1_10, css: '', js: '' },
 
   // Phase 2
-  '02-01-link-css-reset': { html: P2_HTML_BASE, css: P2_CSS_01, js: '' },
-  '02-02-css-variables-body': { html: P2_HTML_BASE, css: P2_CSS_02, js: '' },
-  '02-03-google-fonts': { html: P2_HTML_BASE, css: P2_CSS_03, js: '' },
-  '02-04-nav-styling': { html: P2_HTML_BASE, css: P2_CSS_04, js: '' },
-  '02-05-hero-background': { html: P2_HTML_BASE, css: P2_CSS_05, js: '' },
-  '02-06-hero-typography': { html: P2_HTML_BASE, css: P2_CSS_06, js: '' },
-  '02-07-section-layout': { html: P2_HTML_BASE, css: P2_CSS_07, js: '' },
-  '02-08-project-grid': { html: P2_HTML_BASE, css: P2_CSS_08, js: '' },
-  '02-09-project-card-hover': { html: P2_HTML_BASE, css: P2_CSS_09, js: '' },
-  '02-10-skills-contact-footer': { html: P2_HTML_BASE, css: P2_CSS_10, js: '' },
+  '02-01-link-css-reset': { html: P2_HTML_NO_FONTS, css: P2_CSS_01, js: '' },
+  '02-02-css-variables-body': { html: P2_HTML_NO_FONTS, css: P2_CSS_02, js: '' },
+  '02-03-google-fonts': { html: P2_HTML, css: P2_CSS_03, js: '' },
+  '02-04-nav-styling': { html: P2_HTML, css: P2_CSS_04, js: '' },
+  '02-05-hero-background': { html: P2_HTML, css: P2_CSS_05, js: '' },
+  '02-06-hero-typography': { html: P2_HTML, css: P2_CSS_06, js: '' },
+  '02-07-section-layout': { html: P2_HTML, css: P2_CSS_07, js: '' },
+  '02-08-project-grid': { html: P2_HTML, css: P2_CSS_08, js: '' },
+  '02-09-project-card-hover': { html: P2_HTML, css: P2_CSS_09, js: '' },
+  '02-10-skills-contact-footer': { html: P2_HTML, css: P2_CSS_10, js: '' },
 
   // Phase 3
   '03-01-chapter-badge': { html: wrapBodyP3(P3_01_HTML_BODY), css: P3_01_CSS, js: '' },
@@ -2377,3 +2392,6 @@ export function getLessonStartCode(id: string): LessonCode {
   // Same phase — use previous lesson's end code
   return LESSON_END_CODE[prev.id] || { html: '', css: '', js: '' };
 }
+
+// Exported for use in exercises.ts
+export { P2_HTML, P2_HTML_NO_FONTS, P2_CSS_01, P2_CSS_02, P2_CSS_03, P2_CSS_04, P2_CSS_05, P2_CSS_06, P2_CSS_07, P2_CSS_08, P2_CSS_09, P2_CSS_10 };

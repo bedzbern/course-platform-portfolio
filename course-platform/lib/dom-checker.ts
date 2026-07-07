@@ -70,6 +70,30 @@ function runCheck(doc: Document, check: DOMCheck): DOMCheckResult {
           : `<${check.selector}> ${attrName}="${attrVal || ''}", expected "${expected}". ${check.hint || ''}`,
       };
     }
+    case 'has-style': {
+      const els = doc.querySelectorAll(check.selector);
+      if (els.length === 0) {
+        return {
+          check,
+          passed: false,
+          message: `Could not find "${check.selector}". ${check.hint || ''}`,
+        };
+      }
+      const property = check.property || '';
+      const expected = (check.expected as string).toLowerCase();
+      const allMatch = Array.from(els).every(el => {
+        const style = doc.defaultView?.getComputedStyle(el);
+        if (!style) return false;
+        return style.getPropertyValue(property).trim().toLowerCase() === expected;
+      });
+      return {
+        check,
+        passed: allMatch,
+        message: allMatch
+          ? `<${check.selector}> has ${property}: ${check.expected}`
+          : `<${check.selector}> should have ${property}: ${check.expected}. ${check.hint || ''}`,
+      };
+    }
     default:
       return { check, passed: false, message: 'Unknown check type' };
   }
